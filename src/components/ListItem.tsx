@@ -26,7 +26,7 @@ const ListItem = ({ data, onClickToggle, onClickDelete}: Props) => {
       </span>
 
       <button className="h-3 w-3 lg:h-4 lg:w-4" onClick={onClickDelete}>
-        <img className="group-hover:block xl:hidden" src={iconCross} alt="delete task" />
+        <img src={iconCross} alt="delete task" />
       </button>
     </li>
   );

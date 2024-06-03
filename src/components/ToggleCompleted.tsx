@@ -8,13 +8,13 @@ type Props = {
 };
 
 const ToggleCompleted = ({ isCompleted, onClick }: Props) => {
-  const labelClass = isCompleted ? 'bg-gradient-to-br from-cyan-400 to-fuchsia-500' : 'bg-gray-300 dark:bg-gray-500';
+  const labelClass = isCompleted ? 'bg-red-500' : 'bg-gray-300 dark:bg-gray-500';
   const divClass = isCompleted ? 'bg-transparent' : 'bg-white dark:bg-dark-blue';
   return (
     <label
-      className={`${labelClass} h-5 w-5 rounded-full p-px`}
+      className={`${labelClass} h-5 w-5 rounded-0 p-px`}
     >
-      <div className={`${divClass} flex h-full w-full items-center justify-center rounded-full`}>
+      <div className={`${divClass} flex h-full w-full items-center justify-center rounded-0`}>
         {isCompleted && <img src={iconCheck} alt="check" />}
       </div>
       <input type="checkbox" checked={isCompleted} className="hidden" onChange={onClick} />

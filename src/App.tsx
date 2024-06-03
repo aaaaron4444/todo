@@ -1,99 +1,83 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import uniqid from 'uniqid';
 import Header from './components/Header';
 import ListItem from './components/ListItem';
-import ToggleCompleted from './components/ToggleCompleted';
-
 
 type Filter = 'all' | 'active' | 'completed';
+
+interface Todo {
+  id: string;
+  title: string;
+  isCompleted: boolean;
+}
 
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [inputTitle, setInputTitle] = useState('');
-  const [inputChecked, setInputChecked] = useState(false);
   const [inputFilter, setInputFilter] = useState<Filter>('all');
 
-
-  useEffect(() => {
-    const prevTodosString = localStorage.getItem('todos');
-    if (prevTodosString === null) return;
-
-    const prevTodos = JSON.parse(prevTodosString) as Todo[];
-    setTodos(prevTodos);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('todos', JSON.stringify(todos));
-  }, [todos]);
-
-  const completedTodos = todos.filter(todo => todo.isCompleted);
-  const activeTodos = todos.filter(todo => !todo.isCompleted);
-  const displayTodos = inputFilter === 'all' ? todos : inputFilter === 'active' ? activeTodos : completedTodos;
-
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = event => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const newTodo: Todo = { id: uniqid(), title: inputTitle, isCompleted: inputChecked };
+    if (!inputTitle.trim() || todos.some(todo => todo.title === inputTitle.trim())) return; // Check for duplicate title
+    const newTodo: Todo = { id: uniqid(), title: inputTitle.trim(), isCompleted: false };
     setTodos([...todos, newTodo]);
+    setInputTitle('');
   };
 
-
-  const handleTodoCheck: (id: string) => React.FormEventHandler<HTMLInputElement> = id => {
-    return e => {
-      const checked = e.currentTarget.checked;
-      const nextTodos = todos.map(todo => {
-        if (todo.id === id) return { ...todo, isCompleted: checked };
-
-        return todo;
-      });
-      setTodos(nextTodos);
-    };
+  const handleToggle = (id: string) => {
+    const updatedTodos = todos.map(todo => {
+      if (todo.id === id) {
+        return { ...todo, isCompleted: !todo.isCompleted };
+      }
+      return todo;
+    });
+    setTodos(updatedTodos);
   };
 
-  const handleTodoDelete: (id: string) => React.MouseEventHandler<HTMLButtonElement> = id => {
-    return () => {
-      const nextTodos = todos.filter(todo => todo.id !== id);
-      setTodos(nextTodos);
-    };
+  const handleDelete = (id: string) => {
+    const updatedTodos = todos.filter(todo => todo.id !== id);
+    setTodos(updatedTodos);
   };
+
+  const filteredTodos = inputFilter === 'all' ? todos : inputFilter === 'active' ? todos.filter(todo => !todo.isCompleted) : todos.filter(todo => todo.isCompleted);
 
   return (
-    <div className="min-h-screen bg-gray-100 ">
+    <div className="min-h-screen bg-black">
       <div className="py-12 px-6 md:mx-auto md:w-[40rem] md:px-0 md:pt-16 lg:pt-20">
         <Header />
 
+        <div className="mb-4 text-white">
+          <p>Completed tasks: {todos.filter(todo => todo.isCompleted).length}</p>
+        </div>
+
+        <ul className="rounded-md shadow-xl dark:bg-dark-blue">
+          {filteredTodos.map(todo => (
+            <ListItem
+              key={todo.id}
+              data={todo}
+              onClickToggle={() => handleToggle(todo.id)}
+              onClickDelete={() => handleDelete(todo.id)} 
+            />
+          ))}
+        </ul>
+
         <form
-          className="mt-6 mb-4 flex items-center rounded-md bg-white px-4 py-3 dark:bg-dark-blue lg:mt-12 lg:mb-6 lg:px-6 lg:py-4"
+          className="mt-6 mb-4 flex items-center rounded-0 bg-white px-4 py-3 dark:bg-dark-blue lg:mt-12 lg:mb-6"
           onSubmit={handleSubmit}
         >
-          <ToggleCompleted isCompleted={inputChecked} onClick={e => setInputChecked(e.currentTarget.checked)} />
           <input
-            className="mt-1 ml-4 flex-1 text-sm outline-none dark:bg-dark-blue dark:text-gray-300 md:text-base"
-            placeholder="Create a new todos..."
-            required
-            pattern="[^\s]+(\s+[^\s]+)*"
+            className="flex-1 text-sm outline-none dark:bg-dark-blue dark:text-gray-300 md:text-base"
+            placeholder="Create a new todo..."
             value={inputTitle}
             onChange={e => setInputTitle(e.currentTarget.value)}
           />
+          <button
+            type="submit"
+            className="ml-2 px-4 py-2 rounded-md bg-blue-500 text-white font-medium transition duration-300 ease-in-out hover:bg-blue-600"
+          >
+            Add Task
+          </button>
         </form>
-
-        <ul className="rounded-md bg-white shadow-xl dark:bg-dark-blue">
-          {displayTodos.map((todo, index) => {
-            return (
-              <ListItem
-                key={todo.id}
-                data={todo}
-                onClickToggle={handleTodoCheck(todo.id)}
-                onClickDelete={handleTodoDelete(todo.id)} 
-              />
-            );
-          })}
-
-          <li className="relative flex items-center justify-between px-4 py-3 text-xs text-slate-400 sm:text-sm">
-            <span>
-              {activeTodos.length} item{activeTodos.length > 1 && 's'} left
-            </span>
-          </li>
-        </ul>
       </div>
     </div>
   );
