@@ -62,7 +62,7 @@ function App() {
         </ul>
 
         <form
-          className="mt-6 mb-4 flex items-center rounded-0 bg-white px-4 py-3 dark:bg-dark-blue lg:mt-12 lg:mb-6"
+          className="flex items-center rounded-0 bg-white px-4 py-3 dark:bg-dark-blue "
           onSubmit={handleSubmit}
         >
           <input
